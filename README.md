@@ -1,0 +1,1 @@
+# Getaran-Gelombang-dan-Cahaya
