@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Kuis IPA SMP Getaran Gelombang dan Cahaya</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    .question {
+      margin-bottom: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    input[type="text"] {
+      width: 300px;
+      margin-bottom: 10px;
+      display: block;
+    }
+    #timer {
+      font-weight: bold;
+      color: red;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Kuis IPA SMP</h2>
+  <h2>By: Torus Manuntun Nababan, M.Pd</h2>
+  <h2>Materi: Getaran Gelombang dan Cahaya</h2>
+  <!-- Form Identitas -->
+  <div id="identityForm">
+    <h3>Silakan isi identitas terlebih dahulu:</h3>
+    <label>Nama:
+      <input type="text" id="nama" required>
+    </label>
+    <label>Kelas:
+      <input type="text" id="kelas" required>
+    </label>
+    <label>Tahun Ajaran:
+      <input type="text" id="tahun" required>
+    </label>
+    <label>Nama Sekolah:
+      <input type="text" id="sekolah" required>
+    </label>
+    <button onclick="startQuiz()">Mulai Kuis</button>
+  </div>
+
+  <!-- Timer -->
+  <div id="timer" class="hidden"></div>
+
+  <!-- Form Soal -->
+  <form id="quizForm" class="hidden">
+    <div id="questionsContainer"></div>
+    <button type="button" onclick="submitQuiz()">Selesai dan Lihat Skor</button>
+  </form>
+
+  <div id="result" class="hidden"></div>
+
+  <script>
+    const questions = [
+      { question: "1. Gerakan bolak-balik secara teratur disebut...", options: ["Gelombang", "Gaya", "Getaran", "Frekuensi"], answer: "Getaran" },
+    { question: "2. Satu kali getaran terdiri dari...", options: ["1 gerakan naik", "1 gerakan turun", "1 gerakan bolak-balik penuh", "Setengah ayunan"], answer: "1 gerakan bolak-balik penuh" },
+    { question: "3. Banyaknya getaran dalam satu detik disebut...", options: ["Periode", "Panjang gelombang", "Frekuensi", "Amplitudo"], answer: "Frekuensi" },
+    { question: "4. Alat untuk mengukur frekuensi adalah...", options: ["Amperemeter", "Voltmeter", "Stopwatch", "Frekuensimeter"], answer: "Frekuensimeter" },
+    { question: "5. Satuan frekuensi dalam SI adalah...", options: ["Hertz", "Meter", "Newton", "Watt"], answer: "Hertz" },
+    { question: "6. Gelombang yang arah getarnya tegak lurus arah rambatnya disebut...", options: ["Longitudinal", "Elektromagnetik", "Transversal", "Mekanik"], answer: "Transversal" },
+    { question: "7. Gelombang longitudinal memiliki arah getar...", options: ["Tegak lurus arah rambat", "Searah arah rambat", "Melingkar", "Diagonal"], answer: "Searah arah rambat" },
+    { question: "8. Contoh gelombang transversal adalah...", options: ["Gelombang air", "Gelombang suara", "Gelombang pegas", "Gelombang seismik"], answer: "Gelombang air" },
+    { question: "9. Contoh gelombang longitudinal adalah...", options: ["Gelombang cahaya", "Gelombang tali", "Gelombang suara", "Gelombang radio"], answer: "Gelombang suara" },
+    { question: "10. Gelombang yang tidak memerlukan medium adalah...", options: ["Mekanik", "Longitudinal", "Transversal", "Elektromagnetik"], answer: "Elektromagnetik" },
+    { question: "11. Cahaya merupakan gelombang...", options: ["Longitudinal", "Mekanik", "Transversal dan elektromagnetik", "Seismik"], answer: "Transversal dan elektromagnetik" },
+    { question: "12. Kecepatan cahaya di ruang hampa adalah sekitar...", options: ["3.000 km/jam", "3 × 10⁸ m/s", "3.000 m/s", "3 × 10⁵ m/s"], answer: "3 × 10⁸ m/s" },
+    { question: "13. Peristiwa pembelokan arah cahaya ketika melewati dua medium berbeda disebut...", options: ["Pemantulan", "Pembiasan", "Penyerapan", "Dispersi"], answer: "Pembiasan" },
+    { question: "14. Pemantulan cahaya pada permukaan datar disebut...", options: ["Pemantulan baur", "Pembiasan", "Refleksi reguler", "Dispersi"], answer: "Refleksi reguler" },
+    { question: "15. Benda yang dapat memancarkan cahaya sendiri disebut...", options: ["Benda terang", "Benda buram", "Benda bening", "Benda sumber cahaya"], answer: "Benda sumber cahaya" },
+    { question: "16. Pelangi terbentuk karena peristiwa...", options: ["Pemantulan", "Pembiasan", "Interferensi", "Dispersi"], answer: "Dispersi" },
+    { question: "17. Bayangan yang terbentuk oleh cermin datar bersifat...", options: ["Nyata dan terbalik", "Maya dan tegak", "Maya dan terbalik", "Nyata dan tegak"], answer: "Maya dan tegak" },
+    { question: "18. Bayangan pada cermin cembung bersifat...", options: ["Nyata dan diperbesar", "Maya, tegak, diperkecil", "Nyata dan terbalik", "Maya dan sama besar"], answer: "Maya, tegak, diperkecil" },
+    { question: "19. Alat optik yang menggunakan prinsip pembiasan cahaya adalah...", options: ["Kaca datar", "Kamera", "Lensa kacamata", "Cermin datar"], answer: "Lensa kacamata" },
+    { question: "20. Lensa cembung dapat digunakan untuk...", options: ["Memperbesar bayangan", "Memperkecil bayangan", "Membalikkan bayangan", "Memantulkan cahaya"], answer: "Memperbesar bayangan" }
+  ];
+
+    let quizTimer;
+    let countdownInterval;
+    const timeLimit = 20 * 60 * 1000; // 20 menit
+
+    function startQuiz() {
+      const nama = document.getElementById('nama').value;
+      const kelas = document.getElementById('kelas').value;
+      const tahun = document.getElementById('tahun').value;
+      const sekolah = document.getElementById('sekolah').value;
+
+      if (!nama || !kelas || !tahun || !sekolah) {
+        alert("Harap lengkapi semua data identitas.");
+        return;
+      }
+
+      document.getElementById('identityForm').classList.add('hidden');
+      document.getElementById('quizForm').classList.remove('hidden');
+      document.getElementById('timer').classList.remove('hidden');
+
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = "";
+      questions.forEach((q, index) => {
+        const div = document.createElement('div');
+        div.classList.add('question');
+        div.innerHTML = `<p>${q.question}</p>` + q.options.map(opt => `
+          <label><input type="radio" name="q${index}" value="${opt}"> ${opt}</label><br>`).join('');
+        container.appendChild(div);
+      });
+
+      // Timer otomatis submit setelah 3 menit
+      quizTimer = setTimeout(() => {
+        alert("Waktu habis! Kuis akan otomatis disubmit.");
+        submitQuiz();
+      }, timeLimit);
+
+      // Countdown display
+      let remaining = timeLimit / 1000;
+      const timerDisplay = document.getElementById('timer');
+      timerDisplay.textContent = `Sisa waktu: ${remaining} detik`;
+      countdownInterval = setInterval(() => {
+        remaining--;
+        timerDisplay.textContent = `Sisa waktu: ${remaining} detik`;
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+        }
+      }, 1000);
+    }
+
+    function submitQuiz() {
+      clearTimeout(quizTimer);
+      clearInterval(countdownInterval);
+
+      let score = 0;
+      questions.forEach((q, index) => {
+        const selected = document.querySelector(`input[name="q${index}"]:checked`);
+        if (selected && selected.value === q.answer) {
+          score += 10;
+        }
+      });
+
+      document.getElementById('quizForm').classList.add('hidden');
+      document.getElementById('timer').classList.add('hidden');
+      const resultDiv = document.getElementById('result');
+      resultDiv.classList.remove('hidden');
+
+      const nama = document.getElementById('nama').value;
+      const kelas = document.getElementById('kelas').value;
+      const tahun = document.getElementById('tahun').value;
+      const sekolah = document.getElementById('sekolah').value;
+
+      let message = "";
+      if (score >= 70) {
+        message = "<p style='color: green;'><strong>Selamat!</strong> Anda Sudah Bisa Melanjutkan ke Materi Berikutnya.</p>";
+      } else {
+        message = "<p style='color: red;'><strong>Mohon maaf.</strong> Silakan pelajari kembali materi ini sebelum melanjutkan ke materi berikutnya.</p>";
+      }
+
+      resultDiv.innerHTML = `
+        <h3>Hasil Kuis</h3>
+        <p><strong>Nama:</strong> ${nama}</p>
+        <p><strong>Kelas:</strong> ${kelas}</p>
+        <p><strong>Tahun Ajaran:</strong> ${tahun}</p>
+        <p><strong>Sekolah:</strong> ${sekolah}</p>
+        <p><strong>Skor Anda:</strong> ${score} dari 200</p>
+        ${message}
+      `;
+    }
+  </script>
+</body>
+</html>
